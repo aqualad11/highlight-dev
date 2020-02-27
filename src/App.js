@@ -23,7 +23,7 @@ class App extends React.Component {
 
   callbackDbl(exp) {
     this.setState({
-      exportText: exp,
+      exportDblText: exp,
       dblCounter: this.state.dblCounter + 1
     })
   }
@@ -45,8 +45,8 @@ class App extends React.Component {
       ['#B80000', 'Label 1'],
       ['#DB3E00', 'Person'],
       ['#FCCB00', 'Location'],
-      ['#008B02', 'Hello'],
-      ['#006B76', 'World'],
+      ['#008B02', 'Hello World'],
+      ['#006B76', 'fren'],
       ['#1273DE', 'IneedU'],
       ['#004DCF', 'Have'], 
       ['#5300EB', 'Heart'],
@@ -54,38 +54,47 @@ class App extends React.Component {
       ['#B80000', 'Label 1'],
       ['#DB3E00', 'Person'],
       ['#FCCB00', 'Location'],
-      ['#008B02', 'Hello'],
-      ['#006B76', 'World'],
+      ['#008B02', 'Hello World'],
+      ['#006B76', 'fren'],
       ['#1273DE', 'IneedU'],
       ['#004DCF', 'Have'], 
       ['#5300EB', 'Heart'],
       ['#EB9694', 'Odd']
     ];
 
-    if(this.state.counter > 4) {
+    if(this.state.dblCounter > 4) {
       return (
         <div className="App">
           <h3>Single Color Array</h3>
-          <Highlighter text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} />
+          <Highlighter cols={4} text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} />
           <h3>Double Color Array</h3>
           <Highlighter 
           text={tempText} 
           colors={dbl_colors} 
           style={({backgroundColor: '#000', color: '#FFF'})} 
           callback={this.callbackDbl.bind(this)} />
-          <h3>export text</h3>
+          <h3>export single text</h3>
+          <p>{this.state.exportSingleText}</p>
+          <h3>export double text</h3>
           <p>{this.state.exportDblText}</p>
-          <h3>imported text</h3>
-          <Highlighter import text={this.state.exportDblText} colors={dbl_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callback.bind(this)} />
+          <h3>imported single text</h3>
+          <Highlighter 
+          import 
+          cols={10} 
+          text={this.state.exportSingleText} 
+          colors={dbl_colors} 
+          style={({backgroundColor: '#000', color: '#FFF'})} />
+          <h3>imported double text</h3>
+          <Highlighter import text={this.state.exportDblText} colors={dbl_colors} style={({backgroundColor: '#000', color: '#FFF'})}  />
         </div>
       );
     } else {
       return (
         <div className="App">
           <h3>Single Color Array</h3>
-          <Highlighter text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} />
+          <Highlighter cols={5} text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackSingle.bind(this)}/>
           <h3>Double Color Array</h3>
-          <Highlighter text={tempText} colors={dbl_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackDbl.bind(this)} />
+          <Highlighter cols={5} text={tempText} colors={dbl_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackDbl.bind(this)} />
           <h3>export single text</h3>
           <p>{this.state.exportSingleText}</p>
           <h3>export double text</h3>

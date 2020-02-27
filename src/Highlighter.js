@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Popover from 'react-text-selection-popover';
-import { Button, ButtonGroup } from '@material-ui/core';
+import { Button, ButtonGroup, Paper } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
@@ -10,17 +10,17 @@ import ColorHelper from './ColorHelper'
 class Highlighter extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log(ColorHelper);
 		this.state = {
-			text: this.import(this.props.text),
 			textList: this.props.import ? this.import(this.props.text) : 
 			[{
 				text: this.props.text,
 				style: null,
 				label: null,
+				id: Date.now(),
 				ref: React.createRef()
 			}],
-			colorOptions: ColorHelper.createColorObjects(this.props.colors)
+			colorOptions: ColorHelper.createColorObjects(this.props.colors, this.props.cols),
+			isOpen: false,
 		}
 	}
 
@@ -52,6 +52,7 @@ class Highlighter extends React.Component {
 
 		let textList = [];
 		let start = 0;
+		let ids = Date.now();
 
 		// construct textList 
 		for(const m of matches) {
@@ -61,19 +62,23 @@ class Highlighter extends React.Component {
 					text: text.substring(start, m.index),
 					style: null,
 					label: null,
+					id: ids++,
 					ref: React.createRef()
 				});
 			} 
+
 
 			// add highlighted text
 			textList.push({
 				text: m.innerText, 
 				style: ColorHelper.makeTextStyle(m.color),
 				label: m.label,
+				id: ids++,
 				ref: React.createRef()
 			});
-			start = m.index + m.fullLength;
 
+			start = m.index + m.fullLength;
+			ids++;
 		}
 
 		// get last piece of unhighlighted text
@@ -82,6 +87,7 @@ class Highlighter extends React.Component {
 				text: text.substring(start),
 				style: null,
 				label: null,
+				id: ids,
 				ref: React.createRef()
 			});
 
@@ -114,10 +120,17 @@ class Highlighter extends React.Component {
 	highlightText(color, label) {
 		const selection = window.getSelection();
 
+		console.log('Check parent node:');
+		console.log(selection.getRangeAt(0).startContainer.parentNode)
+		console.log('id of parentNode:');
+		console.log(selection.getRangeAt(0).startContainer.parentNode.id)
+
 		if(selection) {
 			if(selection.anchorNode.textContent !== selection.focusNode.textContent) {
 				return;
 			}
+
+			let spanId = selection.getRangeAt(0).startContainer.parentNode.id; 
 
  			let str = selection.toString();
  			let span = selection.anchorNode.textContent;
@@ -128,16 +141,17 @@ class Highlighter extends React.Component {
 
 			// get index of span which selection is in
 			let textList = this.state.textList;
-			var index = [];
+			var index = null;
 
 			for(var i = 0; i < textList.length;i++) {
-				if(textList[i].text === span) {
-					index.push(i);
+				if(textList[i].id == spanId) {
+					index = i;
+					break;
 				}
 			}		
 
 			console.log('index: ' + index);
-			console.log('length: ' + index.length);
+			//console.log('length: ' + index.length);
 			console.log('start: ' + start + ' end: ' + end);
 
 			// Things that we need to check for
@@ -148,7 +162,7 @@ class Highlighter extends React.Component {
 			*/
 
 			// checks that there are only one text that matches the span
-			if(index.length === 1) {
+			if(index !== null) {
 
 				// check if whole span is selected, if so change the background
 				if (span === str) {
@@ -156,9 +170,12 @@ class Highlighter extends React.Component {
 				} else {
 
 					let del = 1;
+					let ids = Date.now();
+
 					// grab outer span style and label
 					let outerStyle = textList[index].style;
 					let outerLabel = textList[index].label;
+
 
 					// check if str is ends at the end of span
 					if(end !== span.length) {
@@ -167,6 +184,7 @@ class Highlighter extends React.Component {
 							text: span.substring(end),
 							style: outerStyle,
 							label: outerLabel,
+							id: ids,
 							ref: label
 						});
 
@@ -178,6 +196,7 @@ class Highlighter extends React.Component {
 						text: str,
 						style: ColorHelper.makeTextStyle(color),
 						label: label,
+						id: ++ids,
 						ref: ''
 					});
 
@@ -188,13 +207,15 @@ class Highlighter extends React.Component {
 							text: span.substring(0,start),
 							style: outerStyle,
 							label: outerLabel,
+							id: ++ids,
 							ref: ''
 						});
 					}
 				}
 				
 				this.setState({
-					textList: textList
+					textList: textList,
+					isOpen: false
 				});
 
 				if(this.props.callback) {
@@ -205,7 +226,6 @@ class Highlighter extends React.Component {
 		}
 	}
 
-	// TODO: the title isn't working, figure it out
 	render() {
 		const selectable_ref = React.createRef();
 
@@ -215,7 +235,8 @@ class Highlighter extends React.Component {
 					{this.state.textList.map((text) => {
 						return (
 							<span 
-							key={text.text}
+							id={text.id}
+							key={text.id}
 							style={text.style} 
 							title={text.label}
 							>
@@ -224,24 +245,29 @@ class Highlighter extends React.Component {
 						)
 					})}
 				</span>
-				<Popover selectionRef={selectable_ref} >
-				<Grid container alignContent='space-around' direction='column'>
+				<Popover 
+				selectionRef={selectable_ref}
+				isOpen={this.state.isOpen}
+				onTextSelect={() => this.setState({ isOpen: true })}
+				>
+					<Grid container alignContent='space-around' direction='column'>
 					{this.state.colorOptions.map((colorRow) => 
-							<Grid container>
-									{colorRow.map((color) => 
-										<Grid item style={({flexGrow: '2'})}>
-										<Button
-										size="small"
-										title={color.text}
-										key={color.text}
-										onClick={this.highlightText.bind(this,color.color,color.text)}
-										style={color.style}
-										>
-										{color.text}
-										</Button>
-										</Grid>							
-									)}
-							</Grid>
+						<Grid container>
+							{colorRow.map((color) => 
+								<Grid item xs> 
+									<Button
+									fullWidth
+									size="small"
+									title={color.text}
+									key={color.text}
+									onClick={this.highlightText.bind(this,color.color,color.text)}
+									style={color.style}
+									>
+									{color.text}
+									</Button>
+								</Grid>							
+							)}
+						</Grid>
 					)}
 					</Grid>
 				</Popover>
@@ -250,64 +276,21 @@ class Highlighter extends React.Component {
 	}
 }
 
-/*
-<Grid container direction='column'>
-					{this.state.colorOptions.map((colorRow) => 
-						<Grid item>
-							<Grid container style={({'align-items': 'stretch'})}>
-								<Grid item>
-									<ButtonGroup variant='contained'>
-									{colorRow.map((color) => 
-										<Button
-										size="small"
-										title={color.text}
-										key={color.text}
-										onClick={this.highlightText.bind(this,color.color,color.text)}
-										style={color.style} 
-										>
-										{color.text}
-										</Button>
-									)}
-									</ButtonGroup>
-								</Grid>							
-							</Grid>
-						</Grid>
-					)}
-					</Grid>
-*/
-
-/*
-					<GridList cols={6}>
-					{this.props.colors.map((color) => 
-						<GridListTile key={color}>
-							<Button
-							size="small"
-							title={color.text}
-							key={color.text}
-							onClick={this.highlightText.bind(this,color)}
-							style={({backgroundColor: color})} 
-							>
-							Hello
-							</Button>	
-						</GridListTile>
-					)}	
-					</GridList>
-
-*/
-
 
 Highlighter.propTypes = {
 	text: PropTypes.string.isRequired,
 	style: PropTypes.object,
 	colors: PropTypes.array,
 	callback: PropTypes.func,
+	cols: PropTypes.number,
 	import: PropTypes.bool
 }
 
 Highlighter.defaultProps = {
-	colors: [],
+	colors: ['#B80000', '#DB3E00', '#FCCB00', '#008B02', '#006B76', '#1273DE', '#004DCF', '#5300EB', '#EB9694', '#FAD0C3', '#FEF3BD', '#C1E1C5', '#BEDADC', '#C4DEF6', '#BED3F3', '#D4C4FB'],
 	style: null,
 	callback: null,
+	cols: 8,
 	import: false
 }
 

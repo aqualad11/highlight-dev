@@ -13,19 +13,21 @@ export default {
 		return false;
 	},
 
-	createColorObjects(colors) {
+	createColorObjects(colors, columns) {
 		let newColors = [];
+		let colorSet = new Set();
 
 		// colors have labels
 		if(Array.isArray(colors[0])) {
 			for(const color of colors) {
 				if(color.length === 2) {
-					if(this.validColor(color[0])) {
+					if(this.validColor(color[0]) && !colorSet.has(color[0])) {
 						newColors.push({
 							color: color[0],
 							style: this.makeButtonStyle(color[0]),
 							text: color[1]
 						});
+						colorSet.add(color[0]);
 					}
 				} else {
 					console.error('Color in incorrect format: ' + color);
@@ -33,33 +35,40 @@ export default {
 			}
 		} else { // colors do not have labels
 			for(const color of colors) {
-				if(this.validColor(color)) {
+				if(this.validColor(color) && !colorSet.has(color)) {
 					newColors.push({
 						color: color,
-						style: {backgroundColor: color, color: color, width: '100%', 'flex-grow': '1', 'min-width': '30px', 'min-height': '30px'},
+						style: {
+							backgroundColor: color, 
+							color: color, 
+							'min-width': '30px', 
+							'min-height': '30px',
+							overFlow: 'none',
+						},
 						text: null
 					});
+					colorSet.add(color);
 				}
 			}
 		}
 
-		newColors = this.splitColors(newColors);
+		newColors = this.splitColors(newColors, columns);
 
 		return newColors;
 
 	}, 
 
 	// splits color list into a 2d array to have color rows
-	splitColors(colors) {
+	splitColors(colors, cols) {
 		let splitList = [];
 
 		while(colors.length > 0) {
-			if(colors.length <= 8) {
+			if(colors.length <= cols) {
 				splitList.push(colors);
 				colors = [];
 			} else {
-				splitList.push(colors.slice(0,8));
-				colors = colors.slice(8);
+				splitList.push(colors.slice(0,cols));
+				colors = colors.slice(cols);
 			}
 		}
 
@@ -139,7 +148,8 @@ export default {
 			backgroundColor: color,
 			color: text,
 			'minWidth': '30px',
-			'minHeight': '30px'  		
+			'minHeight': '30px',  		
+			'white-space': 'pre',
 		}		
 	}
 
