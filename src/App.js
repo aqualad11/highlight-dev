@@ -62,6 +62,25 @@ class App extends React.Component {
       ['#EB9694', 'Odd']
     ];
 
+    const demo_colors = [
+      '#b80000', 
+      '#DB3E00', 
+      '#008B02',
+      '#FC0',
+      'rgb(109,163,182)'
+    ];
+
+    const labeledColors = [
+      ['#B80000', 'Label 1'],
+      ['#DB3E00', 'Label 2'],
+      ['#008B02', 'Label 3'],
+      ['#FC0', 'Label 4'],
+      ['rgb(109,163,182)', 'Label 5'],
+    ]
+
+    const demoText = 'This is the demo text for unlabeled colors.';
+    const demoLabelsText = 'This is the demo text for labeled colors.';
+
     if(this.state.dblCounter > 4) {
       return (
         <div className="App">
@@ -90,15 +109,28 @@ class App extends React.Component {
       );
     } else {
       return (
-        <div className="App">
+        <div className="App" style={({backgroundColor:'black',color: '#FFF'})}>
+          <br/>
+          <br/>
+          <br/>
+          <h3>Basic Example</h3>
+          <Highlighter text={tempText} style={({backgroundColor: '#000', color: '#FFF'})} />
           <h3>Single Color Array</h3>
-          <Highlighter cols={5} text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackSingle.bind(this)}/>
+          <Highlighter text={tempText} colors={single_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackSingle.bind(this)}/>
           <h3>Double Color Array</h3>
           <Highlighter cols={5} text={tempText} colors={dbl_colors} style={({backgroundColor: '#000', color: '#FFF'})} callback={this.callbackDbl.bind(this)} />
           <h3>export single text</h3>
           <p>{this.state.exportSingleText}</p>
           <h3>export double text</h3>
           <p>{this.state.exportDblText}</p>
+          <p>demo colors w/out labels</p>
+          <Highlighter text={demoText} colors={demo_colors} />
+          <br/>
+          <p>demo colors w/ labels</p>
+          <Highlighter text={demoLabelsText} colors={labeledColors} />
+          <br/>
+          <br/>
+          <br/>
         </div>
       );
     }

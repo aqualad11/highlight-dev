@@ -1,10 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Popover from 'react-text-selection-popover';
-import { Button, ButtonGroup, Paper } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
+import { Button, Grid } from '@material-ui/core';
 import ColorHelper from './ColorHelper'
 
 class Highlighter extends React.Component {
@@ -24,6 +21,7 @@ class Highlighter extends React.Component {
 		}
 	}
 
+	// import existing highlighted text that has been exported
 	import(text) {
 		let pattern = /\[([^[]*)\]\((.{4,17})\)/g;
 		let match =  [];//text.match(/\[([^[]*)\]\((.{4,17})\)/g)
@@ -34,8 +32,6 @@ class Highlighter extends React.Component {
 			match = pattern.exec(text);
 			if(match) {
 				let colorLabel = match[2].split(', ');
-				console.log('labelColor: ');
-				console.log(colorLabel);
 				matches.push({
 					fullLength: match[0].length,
 					innerText: match[1],
@@ -45,8 +41,6 @@ class Highlighter extends React.Component {
 				})
 			}
 
-			console.log('matches')
-			console.log(match)
 			
 		} while(match);
 
@@ -97,6 +91,7 @@ class Highlighter extends React.Component {
 		return textList;
 	}
 
+	// export highlighted text to be stored
 	export() {
 		let str = '';
 		for(const text of this.state.textList) {
@@ -113,25 +108,23 @@ class Highlighter extends React.Component {
 			}
 		}
 
-		this.props.callback(str);
+		this.props.export(str);
 	}	
 	
 
+	// highlight selected text
 	highlightText(color, label) {
+		// get selected text
 		const selection = window.getSelection();
 
-		console.log('Check parent node:');
-		console.log(selection.getRangeAt(0).startContainer.parentNode)
-		console.log('id of parentNode:');
-		console.log(selection.getRangeAt(0).startContainer.parentNode.id)
-
 		if(selection) {
+			// check if selected unhighlighted and highlighted text
 			if(selection.anchorNode.textContent !== selection.focusNode.textContent) {
 				return;
 			}
 
+			// get span vars
 			let spanId = selection.getRangeAt(0).startContainer.parentNode.id; 
-
  			let str = selection.toString();
  			let span = selection.anchorNode.textContent;
 
@@ -150,17 +143,7 @@ class Highlighter extends React.Component {
 				}
 			}		
 
-			console.log('index: ' + index);
-			//console.log('length: ' + index.length);
-			console.log('start: ' + start + ' end: ' + end);
-
-			// Things that we need to check for
-			/*
-			is span === str
-			does start === 0
-			does end === span.length - 1
-			*/
-
+	
 			// checks that there are only one text that matches the span
 			if(index !== null) {
 
@@ -213,12 +196,14 @@ class Highlighter extends React.Component {
 					}
 				}
 				
+				// update state
 				this.setState({
 					textList: textList,
 					isOpen: false
 				});
 
-				if(this.props.callback) {
+				// export text
+				if(this.props.export) {
 					this.export();
 				}
 			}
@@ -249,17 +234,17 @@ class Highlighter extends React.Component {
 				selectionRef={selectable_ref}
 				isOpen={this.state.isOpen}
 				onTextSelect={() => this.setState({ isOpen: true })}
-				>
+			 	onTextUnselect={() => this.setState({ isOpen: false })} >
 					<Grid container alignContent='space-around' direction='column'>
 					{this.state.colorOptions.map((colorRow) => 
-						<Grid container>
+						<Grid container key={'cont_' + colorRow[0].color}>
 							{colorRow.map((color) => 
-								<Grid item xs> 
+								<Grid item xs key={'item_' + color.color}> 
 									<Button
 									fullWidth
 									size="small"
 									title={color.text}
-									key={color.text}
+									key={color.color}
 									onClick={this.highlightText.bind(this,color.color,color.text)}
 									style={color.style}
 									>
@@ -281,7 +266,7 @@ Highlighter.propTypes = {
 	text: PropTypes.string.isRequired,
 	style: PropTypes.object,
 	colors: PropTypes.array,
-	callback: PropTypes.func,
+	export: PropTypes.func,
 	cols: PropTypes.number,
 	import: PropTypes.bool
 }
@@ -289,7 +274,7 @@ Highlighter.propTypes = {
 Highlighter.defaultProps = {
 	colors: ['#B80000', '#DB3E00', '#FCCB00', '#008B02', '#006B76', '#1273DE', '#004DCF', '#5300EB', '#EB9694', '#FAD0C3', '#FEF3BD', '#C1E1C5', '#BEDADC', '#C4DEF6', '#BED3F3', '#D4C4FB'],
 	style: null,
-	callback: null,
+	export: null,
 	cols: 8,
 	import: false
 }

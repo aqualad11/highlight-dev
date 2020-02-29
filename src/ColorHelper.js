@@ -13,6 +13,7 @@ export default {
 		return false;
 	},
 
+	// creates the color objects for Highlighter.js
 	createColorObjects(colors, columns) {
 		let newColors = [];
 		let colorSet = new Set();
@@ -41,9 +42,8 @@ export default {
 						style: {
 							backgroundColor: color, 
 							color: color, 
-							'min-width': '30px', 
-							'min-height': '30px',
-							overFlow: 'none',
+							minWidth: '30px', 
+							minHeight: '30px',
 						},
 						text: null
 					});
@@ -52,6 +52,7 @@ export default {
 			}
 		}
 
+		// split colors into number of columns
 		newColors = this.splitColors(newColors, columns);
 
 		return newColors;
@@ -89,7 +90,7 @@ export default {
 			}			
 		} else {
 			// #rgb pattern 
-			color = color.substring(1);
+			color = color.substring(1); // get rid of #
 			let red = '';
 			let green = '';
 			let blue = '';
@@ -119,7 +120,6 @@ export default {
 	},
 
 	// makes style for text and background of highlighted text
-	// TODO: check for validColor
 	makeTextStyle(color) {
 		// get rgb values
 		let rgb = this.extractRGB(color);
@@ -147,9 +147,9 @@ export default {
 		return {
 			backgroundColor: color,
 			color: text,
-			'minWidth': '30px',
-			'minHeight': '30px',  		
-			'white-space': 'pre',
+			minWidth: '30px',
+			minHeight: '30px',  		
+			whiteSpace: 'pre',
 		}		
 	}
 
